@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fighting Arena with Sprites</title>
+
+<!-- Jinja variables for sprite images -->
+{% set background_img = url_for('static', filename='images/background.png') %}
+{% set fighter1_img = url_for('static', filename='images/Idle1.png') %}
+{% set fighter2_img = url_for('static', filename='images/Idle2.png') %}
+
+<style>
+/* General body & arena */
+body {
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+    background-image: url('{{ background_img }}');
+    background-size: cover;       /* fill viewport while keeping aspect ratio */
+    background-position: center;  /* center the image */
+    background-repeat: no-repeat; /* don’t tile */
+    font-family: Arial, sans-serif;
+    position: relative;
+}
+
+.arena {
+    position: relative;
+    width: 100vw;
+    height: 100%;
+    z-index: 0;
+}
+
+/* Fighting platform */
+.platform {
+    position: absolute;
+    bottom: 0px;
+    left: 0;
+    width: 100%;
+    height: 90px;
+    background: #333;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+}
+
+/* Fighter common styles */
+.fighter, .fighter2 {
+    position: absolute;
+    bottom: 90px;
+    width: 80px;    /* width of 1 frame (base) */
+    height: 100px;  /* height of frame (base) */
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    z-index: 1;
+
+    /* NEW: scale settings */
+    image-rendering: pixelated;
+    transform-origin: bottom center;
+}
+
+/* Fighter 1 idle animation */
+.fighter {
+    bottom: 90px;
+    left: 100px;
+    width: 128px;            /* exact frame width */
+    height: 128px;           /* frame height */
+    background-image: url('{{ fighter1_img }}');
+    background-size: 600% 100%;
+    background-repeat: no-repeat;
+    animation: idle1 1.2s steps(6) infinite;
+
+    /* NEW: 2.5x scale */
+    transform: scale(2.5);
+}
+
+@keyframes idle1 {
+    from { background-position: 0 0; }
+    to   { background-position: -768px 0; }
+}
+
+/* Fighter 2 idle animation */
+.fighter2 {
+    bottom: 90px;
+    right: 100px;
+    width: 128px;            /* exact frame width */
+    height: 128px;           /* frame height */
+    background-image: url('{{ fighter2_img }}');
+    background-size: 700% 100%;
+    background-repeat: no-repeat;
+    animation: idle2 1.5s steps(7) infinite;
+
+    /* NEW: 2.5x bigger and flipped to face fighter 1 */
+    transform: scale(2.5) scaleX(-1);
+}
+
+@keyframes idle2 {
+    from { background-position: 0 0; }
+    to   { background-position: -896px 0; }
+}
+</style>
+</head>
+
+<body>
+<div class="arena">
+    <div class="platform"></div>
+    <div class="fighter"></div>
+    <div class="fighter2"></div>
+</div>
+
+<!-- Raspberry Pi video feed -->
+{% include "screenFlaskHTML.html" %}
+</body>
+</html>

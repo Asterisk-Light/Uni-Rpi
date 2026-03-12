@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<style>
+video {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 500px;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+}
+
+h2 {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: white;
+}
+</style>
+<body>
+<h2>Raspberry Pi Screen</h2>
+<video id="video" autoplay playsinline></video>
+
+<script>
+const pc = new RTCPeerConnection();
+pc.addTransceiver("video", { direction: "recvonly" });
+
+pc.ontrack = (event) => {
+    document.getElementById("video").srcObject = event.streams[0];
+};
+
+async function start() {
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+
+    const response = await fetch("/offer", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            sdp: pc.localDescription.sdp,
+            type: pc.localDescription.type
+        })
+    });
+
+    const answer = await response.json();
+    await pc.setRemoteDescription(answer);
+}
+
+start();
+</script>
+</body>
+</html>
