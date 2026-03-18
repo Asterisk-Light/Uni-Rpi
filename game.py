@@ -70,3 +70,54 @@ pygame.quit()
 #     p2block: P2_BLOCK
 # }
 
+SPRITE_DEF = {
+    "p1": {
+        "idle":    ("static/images/Idle1.png",     6,  8),
+        "walk":    ("static/images/Walk1.png",     8, 12),
+        "attack1": ("static/images/Attack1.1.png", 6, 14),  # basic attack
+        "attack2": ("static/images/Attack1.2.png", 6, 10),  # back + attack (heavy)
+        "special": ("static/images/Special1.png",  8, 14),  # forward + attack
+        "hurt":    ("static/images/Hurt1.png",     4, 12),
+        "dead":    ("static/images/Dead1.png",     6,  8),
+    },
+    "p2": {
+        "idle":    ("static/images/Idle2.png",     7,  8),
+        "walk":    ("static/images/Walk2.png",     8, 12),
+        "attack1": ("static/images/Attack2.1.png", 6, 14),
+        "attack2": ("static/images/Attack2.3.png", 6, 10),
+        "special": ("static/images/Special1.png",  8, 14),  # same as p1
+        "hurt":    ("static/images/Hurt2.png",     4, 12),
+        "dead":    ("static/images/Dead2.png",     6,  8),
+    },
+}
+# Which animation frames are "active" (can deal damage)
+ACTIVE_FRAMES = {
+    "attack1": (2, 4),
+    "attack2": (2, 5),
+    "special": (3, 6),
+}
+ 
+# How long each attack and hurt animation plays before going back to idle
+ATTACK_DURATION = {
+    "attack1": 0.43,
+    "attack2": 0.60,
+    "special": 0.57,
+    "hurt":    0.33,
+}
+class SpriteSheet:
+    def __init__(self, path, frame_count, scale):
+        sheet = pygame.image.load(path).convert_alpha()
+        size  = int(FRAME_SIZE * scale)
+        self.frames = [
+            pygame.transform.scale(
+                sheet.subsurface(pygame.Rect(i * FRAME_SIZE, 0, FRAME_SIZE, FRAME_SIZE)),
+                (size, size)
+            )
+            for i in range(frame_count)
+        ]
+ 
+    def get(self, index):
+        return self.frames[int(index) % len(self.frames)]
+ 
+    def __len__(self):
+        return len(self.frames)
