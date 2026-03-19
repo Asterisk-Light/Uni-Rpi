@@ -4,25 +4,28 @@ from gpiozero import Button
 import os
 import pygame
 
-p1left = Button(23)
-p1right = Button(24)
-p1attack = Button(25)
-p1block = Button(12)
+# p1left = Button(23)
+# p1right = Button(24)
+# p1attack = Button(25)
+# p1block = Button(12)
 
 
-p2left = Button(17)
-p2right = Button(27)
-p2attack = Button(22)
-p2block = Button(5)
+# p2left = Button(17)
+# p2right = Button(27)
+# p2attack = Button(22)
+# p2block = Button(5)
 
-p1left.is_pressed = pygame.K_a
-p1right.is_pressed = pygame.K_d
-p1attack.is_pressed = pygame.K_w
-p1block.is_pressed = pygame.K_e
-p2left.is_pressed = pygame.K_LEFT 
-p2right.is_pressed = pygame.K_RIGHT
-p2attack.is_pressed = pygame.K_o
-p2block.is_pressed = pygame.K_p
+# p1left.is_pressed = pygame.K_a
+# p1right.is_pressed = pygame.K_d
+# p1attack.is_pressed = pygame.K_w
+# p1block.is_pressed = pygame.K_e
+# p2left.is_pressed = pygame.K_LEFT 
+# p2right.is_pressed = pygame.K_RIGHT
+# p2attack.is_pressed = pygame.K_o
+# p2block.is_pressed = pygame.K_p
+
+bg1 = pygame.image.load("static/images/background.png")
+bg1 = pygame.transform.scale(bg1, (1280, 720))
 
 # pygame setup
 pygame.init()
@@ -41,6 +44,8 @@ while running:
     screen.fill("purple")
 
     # RENDER YOUR GAME HERE
+
+    screen.blit(bg1, (0, 0))
 
     # flip() the display to put your work on screen
     pygame.display.flip()
