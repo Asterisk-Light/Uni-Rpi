@@ -132,34 +132,52 @@ def draw_hp_bars(surface, f1, f2, font):
 
 
 
-
-# pygame setup
+# Pygame Setup
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
 clock = pygame.time.Clock()
 running = True
-bg1 = pygame.image.load("static/images/background.png")
-bg1 = pygame.transform.scale(bg1, (1280, 720))
 
+# Positions for players
+p1Pos = pygame.Vector2(screen.get_width() / 4, screen.get_height() / 4)
+p2Pos = pygame.Vector2(screen.get_width() / 4 * 3, screen.get_height() / 4)
+
+# Load background image
+try:
+    bg1 = pygame.image.load("static/images/background.png").convert()
+    bg1 = pygame.transform.scale(bg1, (1280, 720))
+except Exception:
+    bg1 = None  # fallback if no background image
+
+# Load player 1 idle sprite sheet
+idle_path, idle_frames, idle_scale = SPRITE_DEF["p1"]["idle"]
+p1_idle_spritesheet = SpriteSheet(idle_path, idle_frames, idle_scale /2)
+
+frame_index = 0.0
+animation_speed = 10  # frames per second
 
 while running:
-    # poll for events
-    # pygame.QUIT event means the user clicked X to close your window
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    # fill the screen with a color to wipe away anything from last frame
+    # Fill screen with purple as fallback background color
     screen.fill("purple")
 
-    # RENDER YOUR GAME HERE
+    # Draw background if loaded
+    if bg1:
+        screen.blit(bg1, (0, 0))
 
-    screen.blit(bg1, (0, 0))
+    # Animate player 1 idle sprite
+    frame_index += animation_speed * clock.get_time() / 1000.0  # advance frame based on time elapsed
+    if frame_index >= len(p1_idle_spritesheet):
+        frame_index = 0.0
 
-    # flip() the display to put your work on screen
+    current_frame = p1_idle_spritesheet.get(frame_index)
+    rect = current_frame.get_rect(center=(int(p1Pos.x), int(p1Pos.y)))
+    screen.blit(current_frame, rect)
+
     pygame.display.flip()
-
-    clock.tick(60)  # limits FPS to 60
+    clock.tick(60)
 
 pygame.quit()
-
