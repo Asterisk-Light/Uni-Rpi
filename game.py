@@ -35,36 +35,6 @@ MAX_HP     = 100
 # p2attack.is_pressed = pygame.K_o
 # p2block.is_pressed = pygame.K_p
 
-bg1 = pygame.image.load("static/images/background.png")
-bg1 = pygame.transform.scale(bg1, (1280, 720))
-
-# pygame setup
-pygame.init()
-screen = pygame.display.set_mode((1280, 720))
-clock = pygame.time.Clock()
-running = True
-
-while running:
-    # poll for events
-    # pygame.QUIT event means the user clicked X to close your window
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-
-    # fill the screen with a color to wipe away anything from last frame
-    screen.fill("purple")
-
-    # RENDER YOUR GAME HERE
-
-    screen.blit(bg1, (0, 0))
-
-    # flip() the display to put your work on screen
-    pygame.display.flip()
-
-    clock.tick(60)  # limits FPS to 60
-
-pygame.quit()
-
 
 # P1_LEFT = pygame.K_a
 # P1_RIGHT = pygame.K_d
@@ -74,17 +44,6 @@ pygame.quit()
 # P2_RIGHT = pygame.K_RIGHT
 # P2_ATTACK = pygame.K_o
 # P2_BLOCK = pygame.K_p
-
-# gpioToPygameKey = {
-#     p1left: P1_LEFT,
-#     p1right: P1_RIGHT,
-#     p1attack: P1_ATTACK,
-#     p1block: P1_BLOCK,
-#     p2left: P2_LEFT,
-#     p2right: P2_RIGHT,
-#     p2attack: P2_ATTACK,
-#     p2block: P2_BLOCK
-# }
 
 SPRITE_DEF = {
     "p1": {
@@ -169,3 +128,38 @@ def draw_hp_bars(surface, f1, f2, font):
     pygame.draw.rect(surface, (255, 255, 255),(x2, y, bar_w, bar_h), 2, border_radius=6)
     lbl = font.render(f"{f2.hp}  P2", True, (255, 255, 255))
     surface.blit(lbl, (x2 + bar_w - lbl.get_width() - 8, y + 4))
+
+
+
+
+
+# pygame setup
+pygame.init()
+screen = pygame.display.set_mode((1280, 720))
+clock = pygame.time.Clock()
+running = True
+bg1 = pygame.image.load("static/images/background.png")
+bg1 = pygame.transform.scale(bg1, (1280, 720))
+
+
+while running:
+    # poll for events
+    # pygame.QUIT event means the user clicked X to close your window
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # fill the screen with a color to wipe away anything from last frame
+    screen.fill("purple")
+
+    # RENDER YOUR GAME HERE
+
+    screen.blit(bg1, (0, 0))
+
+    # flip() the display to put your work on screen
+    pygame.display.flip()
+
+    clock.tick(60)  # limits FPS to 60
+
+pygame.quit()
+
