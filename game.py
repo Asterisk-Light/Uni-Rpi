@@ -4,6 +4,17 @@ from gpiozero import Button
 import os
 import pygame
 
+
+SCREEN_W   = 1280
+SCREEN_H   = 720
+FPS        = 60
+SCALE      = 2.5
+FRAME_SIZE = 128
+MOVE_SPEED = 5
+GROUND_Y   = SCREEN_H - 90
+MAX_HP     = 100
+
+
 # p1left = Button(23)
 # p1right = Button(24)
 # p1attack = Button(25)
@@ -126,3 +137,35 @@ class SpriteSheet:
  
     def __len__(self):
         return len(self.frames)
+
+    # ── draw
+ 
+    def draw(self, surface):
+        frame = self.sheets[self.state].get(self.frame_index)
+        if self.facing == -1:
+            frame = pygame.transform.flip(frame, True, False)
+        y = GROUND_Y - frame.get_height()
+        surface.blit(frame, (int(self.x), y))
+ 
+ 
+#hp
+def draw_hp_bars(surface, f1, f2, font):
+    bar_w = int(SCREEN_W * 0.3)   # 30% of screen width
+    bar_h = int(SCREEN_H * 0.04)  # 4% of screen height
+    margin = int(SCREEN_W * 0.03) # 3% of screen width
+    y = int(SCREEN_H * 0.04)      # 4% from top
+
+    # P1— left side
+    pygame.draw.rect(surface, (80, 0, 0),    (margin, y, bar_w, bar_h), border_radius=6)
+    pygame.draw.rect(surface, (200, 40, 40), (margin, y, int(bar_w * f1.hp / MAX_HP), bar_h), border_radius=6)
+    pygame.draw.rect(surface, (255, 255, 255),(margin, y, bar_w, bar_h), 2, border_radius=6)
+    surface.blit(font.render(f"P1  {f1.hp}", True, (255, 255, 255)), (margin + 8, y + 4))
+
+    # P2 — right side
+    x2   = SCREEN_W - margin - bar_w
+    fill = int(bar_w * f2.hp / MAX_HP)
+    pygame.draw.rect(surface, (80, 0, 0),    (x2, y, bar_w, bar_h), border_radius=6)
+    pygame.draw.rect(surface, (200, 40, 40), (x2 + bar_w - fill, y, fill, bar_h), border_radius=6)
+    pygame.draw.rect(surface, (255, 255, 255),(x2, y, bar_w, bar_h), 2, border_radius=6)
+    lbl = font.render(f"{f2.hp}  P2", True, (255, 255, 255))
+    surface.blit(lbl, (x2 + bar_w - lbl.get_width() - 8, y + 4))
