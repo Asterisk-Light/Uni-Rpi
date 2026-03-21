@@ -34,7 +34,7 @@ class ScreenTrack(VideoStreamTrack):
 # Main arena page
 @app.route("/")
 def arena():
-    return render_template("background.html")
+    return render_template("screenFlaskHTML.html")
 
 # WebRTC offer endpoint
 @app.route("/offer", methods=["POST"])
