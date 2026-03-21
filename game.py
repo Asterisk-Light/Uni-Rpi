@@ -1,6 +1,6 @@
 # code for game
 
-from gpiozero import Button
+#from gpiozero import Button
 import os
 import pygame
 
