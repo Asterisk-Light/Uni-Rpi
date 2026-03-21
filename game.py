@@ -130,8 +130,6 @@ def draw_hp_bars(surface, f1, f2, font):
     surface.blit(lbl, (x2 + bar_w - lbl.get_width() - 8, y + 4))
 
 
-
-
 # Pygame Setup
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
@@ -139,8 +137,9 @@ clock = pygame.time.Clock()
 running = True
 
 # Positions for players
-p1Pos = pygame.Vector2(screen.get_width() / 4, screen.get_height() / 4)
-p2Pos = pygame.Vector2(screen.get_width() / 4 * 3, screen.get_height() / 4)
+p1Pos = pygame.Vector2(screen.get_width() / 4, screen.get_height() * 0.6)
+p2Pos = pygame.Vector2(screen.get_width() / 4 * 3, screen.get_height() * 0.6)
+
 
 # Load background image
 try:
@@ -150,11 +149,18 @@ except Exception:
     bg1 = None  # fallback if no background image
 
 # Load player 1 idle sprite sheet
-idle_path, idle_frames, idle_scale = SPRITE_DEF["p1"]["idle"]
-p1_idle_spritesheet = SpriteSheet(idle_path, idle_frames, idle_scale /2)
+idle_path_p1, idle_frames_p1, idle_scale_p1 = SPRITE_DEF["p1"]["idle"]
+p1_idle_spritesheet = SpriteSheet(idle_path_p1, idle_frames_p1, idle_scale_p1 / 2)
 
-frame_index = 0.0
-animation_speed = 10  # frames per second
+# Load player 2 idle sprite sheet
+idle_path_p2, idle_frames_p2, idle_scale_p2 = SPRITE_DEF["p2"]["idle"]
+p2_idle_spritesheet = SpriteSheet(idle_path_p2, idle_frames_p2, idle_scale_p2 / 2)
+
+# Frame indices for animations
+frame_index_p1 = 0.0
+frame_index_p2 = 0.0
+
+animation_speed = 7  # frames per second
 
 while running:
     for event in pygame.event.get():
@@ -168,16 +174,49 @@ while running:
     if bg1:
         screen.blit(bg1, (0, 0))
 
-    # Animate player 1 idle sprite
-    frame_index += animation_speed * clock.get_time() / 1000.0  # advance frame based on time elapsed
-    if frame_index >= len(p1_idle_spritesheet):
-        frame_index = 0.0
+    move_speed = 5  # pixels per frame
 
-    current_frame = p1_idle_spritesheet.get(frame_index)
-    rect = current_frame.get_rect(center=(int(p1Pos.x), int(p1Pos.y)))
-    screen.blit(current_frame, rect)
+
+    keys = pygame.key.get_pressed()
+
+    # Player 1 movement
+    if keys[pygame.K_a]:
+        p1Pos.x -= move_speed
+    if keys[pygame.K_d]:
+        p1Pos.x += move_speed
+
+    # Player 2 movement
+    if keys[pygame.K_LEFT]:
+        p2Pos.x -= move_speed
+    if keys[pygame.K_RIGHT]:
+        p2Pos.x += move_speed
+
+    # Optional: keep players inside screen bounds horizontally
+    p1Pos.x = max(0, min(screen.get_width(), p1Pos.x))
+    p2Pos.x = max(0, min(screen.get_width(), p2Pos.x))
+
+
+    # Animate player 1 idle sprite
+    frame_index_p1 += animation_speed * clock.get_time() / 1000.0  # advance frame based on time elapsed
+    if frame_index_p1 >= len(p1_idle_spritesheet):
+        frame_index_p1 = 0.0
+
+    current_frame_p1 = p1_idle_spritesheet.get(frame_index_p1)
+    rect_p1 = current_frame_p1.get_rect(center=(int(p1Pos.x), int(p1Pos.y)))
+    screen.blit(current_frame_p1, rect_p1)
+
+    # Animate player 2 idle sprite
+    frame_index_p2 += animation_speed * clock.get_time() / 1000.0  # advance frame based on time elapsed
+    if frame_index_p2 >= len(p2_idle_spritesheet):
+        frame_index_p2 = 0.0
+
+    current_frame_p2 = p2_idle_spritesheet.get(frame_index_p2)
+    current_frame_p2 = pygame.transform.flip(current_frame_p2, True, False)
+    rect_p2 = current_frame_p2.get_rect(center=(int(p2Pos.x), int(p2Pos.y)))
+    screen.blit(current_frame_p2, rect_p2)
 
     pygame.display.flip()
     clock.tick(60)
 
 pygame.quit()
+
