@@ -50,16 +50,16 @@ MAX_HP     = 100
 
 SPRITE_DEF = {
     "p1": {
-        "idle1":    ("static/images/Idle1.png",     6,  8),
-        "walk1":    ("static/images/Walk1.png",     8, 12),
+        "idle":    ("static/images/Idle1.png",     6,  8),
+        "walk":    ("static/images/Walk1.png",     8, 12),
         "attack1": ("static/images/Attack1.1.png", 5, 14),  # basic attack
         "attack2": ("static/images/Attack1.2.png", 3, 10),  # back + attack (heavy)
-        "hurt1":    ("static/images/Hurt1.png",     3, 12),
-        "dead1":    ("static/images/Dead1.png",     4,  8),
+        "hurt":    ("static/images/Hurt1.png",     3, 12),
+        "dead":    ("static/images/Dead1.png",     4,  8),
     },
     "p2": {
-        "idle2":    ("static/images/Idle2.png",     7,  8),
-        "walk2":    ("static/images/Walk2.png",     8, 12),
+        "idle":    ("static/images/Idle2.png",     7,  8),
+        "walk":    ("static/images/Walk2.png",     8, 12),
         "attack1": ("static/images/Attack2.1.png", 4, 14),
         "attack2": ("static/images/Attack2.3.png", 4, 10), # same as p1
         "hurt":    ("static/images/Hurt2.png",     3, 12),
