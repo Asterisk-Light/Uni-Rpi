@@ -50,22 +50,20 @@ MAX_HP     = 100
 
 SPRITE_DEF = {
     "p1": {
-        "idle":    ("static/images/Idle1.png",     6,  8),
-        "walk":    ("static/images/Walk1.png",     8, 12),
-        "attack1": ("static/images/Attack1.1.png", 6, 14),  # basic attack
-        "attack2": ("static/images/Attack1.2.png", 6, 10),  # back + attack (heavy)
-        "special": ("static/images/Special1.png",  8, 14),  # forward + attack
-        "hurt":    ("static/images/Hurt1.png",     4, 12),
-        "dead":    ("static/images/Dead1.png",     6,  8),
+        "idle1":    ("static/images/Idle1.png",     6,  8),
+        "walk1":    ("static/images/Walk1.png",     8, 12),
+        "attack1": ("static/images/Attack1.1.png", 5, 14),  # basic attack
+        "attack2": ("static/images/Attack1.2.png", 3, 10),  # back + attack (heavy)
+        "hurt1":    ("static/images/Hurt1.png",     3, 12),
+        "dead1":    ("static/images/Dead1.png",     4,  8),
     },
     "p2": {
-        "idle":    ("static/images/Idle2.png",     7,  8),
-        "walk":    ("static/images/Walk2.png",     8, 12),
-        "attack1": ("static/images/Attack2.1.png", 6, 14),
-        "attack2": ("static/images/Attack2.3.png", 6, 10),
-        "special": ("static/images/Special1.png",  8, 14),  # same as p1
-        "hurt":    ("static/images/Hurt2.png",     4, 12),
-        "dead":    ("static/images/Dead2.png",     6,  8),
+        "idle2":    ("static/images/Idle2.png",     7,  8),
+        "walk2":    ("static/images/Walk2.png",     8, 12),
+        "attack1": ("static/images/Attack2.1.png", 4, 14),
+        "attack2": ("static/images/Attack2.3.png", 4, 10), # same as p1
+        "hurt":    ("static/images/Hurt2.png",     3, 12),
+        "dead":    ("static/images/Dead2.png",     4,  8),
     },
 }
 # Which animation frames are "active" (can deal damage)
@@ -200,7 +198,7 @@ class Fighter:
         if self.attacking or self.hurting or self.dead:
             return
         if fwd_held or (now - self.fwd_pressed_at) < COMBO_WINDOW:
-            atype = "special"
+            atype = "special" if "special" in self.sheets else "attack1"
         elif back_held or (now - self.back_pressed_at) < COMBO_WINDOW:
             atype = "attack2"
         else:
