@@ -87,6 +87,12 @@ ATTACK_DURATION = {
     "hurt":    0.33,
 }
 
+KNOCKBACK = {
+    "attack1": 20,
+    "attack2": 40,
+    "special": 60,
+}
+
 class SpriteSheet:
     def __init__(self, path, frame_count, scale):
         sheet = pygame.image.load(path).convert_alpha()
@@ -139,84 +145,108 @@ class Fighter:
         self.frame_index = 0.0
         self.hp          = MAX_HP
         self.dead        = False
- 
+
         self.attacking    = False
         self.attack_type  = None
         self.attack_timer = 0.0
         self.hit_landed   = False
- 
+
         self.hurting    = False
         self.hurt_timer = 0.0
- 
+
+        self.invincible_timer = 0.0
+
         self.back_pressed_at = -999.0
         self.fwd_pressed_at  = -999.0
- 
+
         self.sheets   = {}
         self.anim_fps = {}
         for anim, (path, count, fps) in SPRITE_DEF[player_key].items():
             self.sheets[anim]   = SpriteSheet(path, count, SCALE)
             self.anim_fps[anim] = fps
- 
+
     @property
     def scaled_size(self):
         return int(FRAME_SIZE * SCALE)
- 
+
     @property
     def rect(self):
-        w = int(self.scaled_size * 0.8)
-        h = self.scaled_size
+        # more accurate hitboxes
+        w = int(self.scaled_size * 0.35)
+        h = int(self.scaled_size * 0.65)
+
         x = int(self.pos.x) - w // 2
         y = GROUND_Y - h
+
         return pygame.Rect(x, y, w, h)
- 
+
+    def get_attack_hitbox(self):
+        hit_w = int(self.scaled_size * 0.3)
+        hit_h = int(self.scaled_size * 0.3)
+
+        y = self.rect.y + int(self.rect.height * 0.4)
+
+        reach = int(self.scaled_size * -0.15)  # moves the attack hitbox towards the sprite so it's more accurate
+
+        if self.facing == 1:
+            x = self.rect.right + reach
+        else:
+            x = self.rect.left - hit_w - reach
+
+        return pygame.Rect(x, y, hit_w, hit_h)
+
     def set_state(self, new_state):
         if self.state != new_state:
             self.state       = new_state
             self.frame_index = 0.0
- 
+
     def _advance_frame(self, dt):
         self.frame_index += self.anim_fps[self.state] * dt
         total = len(self.sheets[self.state])
         if self.frame_index >= total:
             self.frame_index = 0.0
- 
+
     def take_hit(self, damage):
-        if self.dead or self.hurting:
+        if self.dead or self.hurting or self.invincible_timer > 0:
             return
+
         self.hp = max(0, self.hp - damage)
+
         if self.hp == 0:
             self.dead = True
             self.set_state("dead")
         else:
             self.hurting     = True
+            self.invincible_timer = 0.6
             self.hurt_timer  = ATTACK_DURATION["hurt"]
             self.attacking   = False
             self.attack_type = None
             self.set_state("hurt")
- 
+
     def try_attack(self, now, back_held, fwd_held):
         if self.attacking or self.hurting or self.dead:
             return
-        if fwd_held or (now - self.fwd_pressed_at) < COMBO_WINDOW:
-            atype = "special" if "special" in self.sheets else "attack1"
-        elif back_held or (now - self.back_pressed_at) < COMBO_WINDOW:
+
+        if back_held:
             atype = "attack2"
         else:
             atype = "attack1"
+
         self.attacking    = True
         self.attack_type  = atype
         self.attack_timer = ATTACK_DURATION[atype]
         self.hit_landed   = False
         self.set_state(atype)
- 
+
     def update(self, dt, left_held, right_held, now, opponent):
+
+        if self.invincible_timer > 0:
+            self.invincible_timer -= dt
+
         if self.dead:
             self._advance_frame(dt)
-            total = len(self.sheets["dead"])
-            if self.frame_index >= total - 1:
-                self.frame_index = float(total - 1)
             return
- 
+
         if self.hurting:
             self.hurt_timer -= dt
             if self.hurt_timer <= 0:
@@ -224,59 +254,77 @@ class Fighter:
                 self.set_state("idle")
             self._advance_frame(dt)
             return
- 
+
         if self.attacking:
             self.attack_timer -= dt
             cur = int(self.frame_index)
+
             a_start, a_end = ACTIVE_FRAMES.get(self.attack_type, (2, 4))
+
             if not self.hit_landed and a_start <= cur <= a_end:
-                reach = self.rect.inflate(int(self.scaled_size * 0.5), 0)
-                if self.facing == 1:
-                    reach.x = self.rect.right - reach.width // 4
-                else:
-                    reach.x = self.rect.left - reach.width * 3 // 4
-                if reach.colliderect(opponent.rect):
+                hitbox = self.get_attack_hitbox()
+
+                if hitbox.colliderect(opponent.rect):
                     opponent.take_hit(ATTACK_DAMAGE[self.attack_type])
+
+                    kb = KNOCKBACK[self.attack_type]
+                    opponent.pos.x += kb * self.facing
+                    opponent.pos.x = max(0, min(SCREEN_W, opponent.pos.x))
+
                     self.hit_landed = True
+
+
             if self.attack_timer <= 0:
                 self.attacking   = False
                 self.attack_type = None
                 self.set_state("idle")
+
             self._advance_frame(dt)
             return
- 
+
         if self.facing == 1:
             back_dir = left_held
             fwd_dir  = right_held
         else:
             back_dir = right_held
             fwd_dir  = left_held
- 
+
         if back_dir:
             self.back_pressed_at = now
         if fwd_dir:
             self.fwd_pressed_at = now
- 
+
         moving = False
+
         if left_held:
             self.pos.x -= MOVE_SPEED
-            self.facing  = -1
-            moving       = True
+            self.facing = -1
+            moving = True
+
         if right_held:
             self.pos.x += MOVE_SPEED
-            self.facing  = 1
-            moving       = True
- 
+            self.facing = 1
+            moving = True
+
         self.pos.x = max(0, min(SCREEN_W, self.pos.x))
+
         self.set_state("walk" if moving else "idle")
         self._advance_frame(dt)
- 
+
     def draw(self, surface):
         frame = self.sheets[self.state].get(self.frame_index)
+
         if self.facing == -1:
             frame = pygame.transform.flip(frame, True, False)
-        rect = frame.get_rect(center=(int(self.pos.x), int(self.pos.y)))
+
+        rect = frame.get_rect(midbottom=(int(self.pos.x), GROUND_Y))
         surface.blit(frame, rect)
+
+        # show hitboxes for debugging
+        pygame.draw.rect(surface, (0, 255, 0), self.rect, 2)
+
+        if self.attacking:
+            pygame.draw.rect(surface, (255, 0, 0), self.get_attack_hitbox(), 2)
 
 def draw_win_screen(surface, text, font):
     overlay = pygame.Surface((SCREEN_W, SCREEN_H), pygame.SRCALPHA)
@@ -330,50 +378,12 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    # Fill screen with purple as fallback background color
     screen.fill("purple")
 
-    # Draw background if loaded
     if bg1:
         screen.blit(bg1, (0, 0))
 
-    move_speed = 5  # pixels per frame
-
     keys = pygame.key.get_pressed()
-
-    # Player 1 movement
-    if keys[pygame.K_a]:
-        p1Pos.x -= move_speed
-    if keys[pygame.K_d]:
-        p1Pos.x += move_speed
-
-    # Player 2 movement
-    if keys[pygame.K_LEFT]:
-        p2Pos.x -= move_speed
-    if keys[pygame.K_RIGHT]:
-        p2Pos.x += move_speed
-
-    p1Pos.x = max(0, min(screen.get_width(), p1Pos.x))
-    p2Pos.x = max(0, min(screen.get_width(), p2Pos.x))
-
-    # Animate player 1 idle sprite
-    frame_index_p1 += animation_speed * clock.get_time() / 1000.0  # advance frame based on time elapsed
-    if frame_index_p1 >= len(p1_idle_spritesheet):
-        frame_index_p1 = 0.0
-
-    current_frame_p1 = p1_idle_spritesheet.get(frame_index_p1)
-    rect_p1 = current_frame_p1.get_rect(center=(int(p1Pos.x), int(p1Pos.y)))
-    screen.blit(current_frame_p1, rect_p1)
-
-    # Animate player 2 idle sprite
-    frame_index_p2 += animation_speed * clock.get_time() / 1000.0  # advance frame based on time elapsed
-    if frame_index_p2 >= len(p2_idle_spritesheet):
-        frame_index_p2 = 0.0
-
-    current_frame_p2 = p2_idle_spritesheet.get(frame_index_p2)
-    current_frame_p2 = pygame.transform.flip(current_frame_p2, True, False)
-    rect_p2 = current_frame_p2.get_rect(center=(int(p2Pos.x), int(p2Pos.y)))
-    screen.blit(current_frame_p2, rect_p2)
 
     dt  = clock.get_time() / 1000.0
     now = pygame.time.get_ticks() / 1000.0
@@ -382,32 +392,54 @@ while running:
     p2_attack = keys[pygame.K_o]
 
     if not game_over:
+        # P1 input (facing-based)
         if p1_attack and not prev_attack["p1"]:
-            f1.try_attack(now, back_held=keys[pygame.K_a], fwd_held=keys[pygame.K_d])
+            if f1.facing == 1:
+                p1_back = keys[pygame.K_a]
+                p1_fwd  = keys[pygame.K_d]
+            else:
+                p1_back = keys[pygame.K_d]
+                p1_fwd  = keys[pygame.K_a]
+
+            f1.try_attack(now, back_held=p1_back, fwd_held=p1_fwd)
+
+
+        # P2 input (facing-based)
         if p2_attack and not prev_attack["p2"]:
-            f2.try_attack(now, back_held=keys[pygame.K_RIGHT], fwd_held=keys[pygame.K_LEFT])
+            if f2.facing == 1:
+                p2_back = keys[pygame.K_LEFT]
+                p2_fwd  = keys[pygame.K_RIGHT]
+            else:
+                p2_back = keys[pygame.K_RIGHT]
+                p2_fwd  = keys[pygame.K_LEFT]
+
+            f2.try_attack(now, back_held=p2_back, fwd_held=p2_fwd)
 
         prev_attack["p1"] = p1_attack
         prev_attack["p2"] = p2_attack
 
-        # sync Fighter positions with coursemate's p1Pos/p2Pos
-        f1.pos.x = p1Pos.x
-        f2.pos.x = p2Pos.x
-
+        # Update fighters
         f1.update(dt, keys[pygame.K_a], keys[pygame.K_d], now, opponent=f2)
         f2.update(dt, keys[pygame.K_LEFT], keys[pygame.K_RIGHT], now, opponent=f1)
 
+        # better movement system
+        f1.draw(screen)
+        f2.draw(screen)
+
+        # Facing logic
         if not f1.attacking and not f1.hurting and not f1.dead:
             f1.facing = 1 if f2.pos.x > f1.pos.x else -1
         if not f2.attacking and not f2.hurting and not f2.dead:
             f2.facing = 1 if f1.pos.x > f2.pos.x else -1
 
+        # Win check
         if f1.dead:
             game_over, winner_text = True, "Player 2  WINS!"
         elif f2.dead:
             game_over, winner_text = True, "Player 1  WINS!"
 
     draw_hp_bars(screen, f1, f2, font_sm)
+
     if game_over:
         draw_win_screen(screen, winner_text, font_big)
 
