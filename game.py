@@ -390,7 +390,7 @@ while running:
         prev_attack["p1"] = p1_attack
         prev_attack["p2"] = p2_attack
 
-        # sync Fighter positions with coursemate's p1Pos/p2Pos
+        # sync Fighter positions with p1Pos/p2Pos
         f1.pos.x = p1Pos.x
         f2.pos.x = p2Pos.x
 
