@@ -155,6 +155,7 @@ class Fighter:
         self.hurt_timer = 0.0
 
         self.invincible_timer = 0.0
+        self.attack_cooldown = 0.0
 
         self.back_pressed_at = -999.0
         self.fwd_pressed_at  = -999.0
@@ -227,6 +228,9 @@ class Fighter:
         if self.attacking or self.hurting or self.dead:
             return
 
+        if self.attack_cooldown > 0:
+            return
+
         if back_held:
             atype = "attack2"
         else:
@@ -237,11 +241,15 @@ class Fighter:
         self.attack_timer = ATTACK_DURATION[atype]
         self.hit_landed   = False
         self.set_state(atype)
+        self.attack_cooldown = 0.7
 
     def update(self, dt, left_held, right_held, now, opponent):
 
         if self.invincible_timer > 0:
             self.invincible_timer -= dt
+
+        if self.attack_cooldown > 0:
+            self.attack_cooldown -= dt
 
         if self.dead:
             self._advance_frame(dt)
