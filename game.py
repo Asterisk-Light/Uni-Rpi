@@ -18,10 +18,15 @@ GROUND_Y   = SCREEN_H - 90
 MAX_HP     = 100
 
 
-# p1left = Button(23)
-# p1right = Button(24)
-# p1attack = Button(25)
-# p1block = Button(12)
+p1left = Button(23)
+p1right = Button(24)
+p1attack = Button(25)
+p1block = Button(12)
+
+p1left.is_pressed = pygame.K_a
+p1right.is_pressed = pygame.K_d
+p1attack.is_pressed = pygame.K_w
+p1block.is_pressed = pygame.K_e
 
 
 # p2left = Button(17)
@@ -29,10 +34,6 @@ MAX_HP     = 100
 # p2attack = Button(22)
 # p2block = Button(5)
 
-# p1left.is_pressed = pygame.K_a
-# p1right.is_pressed = pygame.K_d
-# p1attack.is_pressed = pygame.K_w
-# p1block.is_pressed = pygame.K_e
 # p2left.is_pressed = pygame.K_LEFT 
 # p2right.is_pressed = pygame.K_RIGHT
 # p2attack.is_pressed = pygame.K_o
